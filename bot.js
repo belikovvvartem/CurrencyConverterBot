@@ -1,9 +1,11 @@
 // bot.js
 const { Telegraf, Markup } = require('telegraf');
 const axios = require('axios');
+const express = require('express');
 const { TELEGRAM_TOKEN, EXCHANGE_API_KEY, EXCHANGE_API_URL } = require('./config');
 
 const bot = new Telegraf(TELEGRAM_TOKEN);
+const app = express();
 
 // Список доступних валют з прапорами
 const availableCurrencies = {
@@ -44,14 +46,14 @@ bot.on('text', async (ctx) => {
             const rates = response.data.rates;
             const availableCurrenciesText = Object.keys(availableCurrencies)
                 .filter(currency => rates[currency])
-                .map(currency => `${availableCurrencies[currency]} ${currency}`).join('\n'); // Зробимо кожну валюту на окремому рядку з прапором
+                .map(currency => `${availableCurrencies[currency]} ${currency}`).join('\n');
 
             ctx.reply(`Я можу конвертувати з ${availableCurrencies[fromCurrency]} ${fromCurrency} в наступні валюти: \n${availableCurrenciesText}. \nВиберіть валюту для конвертації:`, 
                 Markup.inlineKeyboard(
                     Object.keys(availableCurrencies)
                         .filter(currency => rates[currency])
-                        .map(currency => Markup.button.callback(`${availableCurrencies[currency]}`, `convert_${currency}`)), // Тільки прапори як текст кнопки
-                    { columns: 4 } // Кількість стовпців для макету
+                        .map(currency => Markup.button.callback(`${availableCurrencies[currency]}`, `convert_${currency}`)),
+                    { columns: 4 }
                 )
             );
 
@@ -77,5 +79,14 @@ bot.on('text', async (ctx) => {
     }
 });
 
-// Запуск бота
-bot.launch();
+// Налаштування вебхука
+const PORT = process.env.PORT || 3000;
+const URL = process.env.URL || 'https://your-app-url.up.railway.app'; // Замініть на URL вашого додатка
+
+bot.telegram.setWebhook(`${URL}/webhook`);
+app.use(bot.webhookCallback('/webhook'));
+
+// Запуск сервера
+app.listen(PORT, () => {
+    console.log(`Бот запущений на порті ${PORT}`);
+});
