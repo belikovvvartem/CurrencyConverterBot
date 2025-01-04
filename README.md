@@ -9,6 +9,6 @@
 - **Instant Access:** Available anytime on Telegram for quick currency conversion.  
 
 ## Technologies
-- **Python**  
+- **Node JS**  
 - Integration with currency APIs for real-time rates.  
 - Telegram Bot API for interaction.  
